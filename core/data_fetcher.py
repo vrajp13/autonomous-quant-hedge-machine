@@ -1,14 +1,21 @@
-
 import yfinance as yf
 import pandas as pd
 
 def fetch_prices(tickers):
-    data = {}
-    for t in tickers[:200]:
+
+    data = []
+
+    for ticker in tickers:
         try:
-            df = yf.download(t, period="6mo", progress=False)
-            if not df.empty:
-                data[t] = df['Close']
-        except:
-            pass
+            stock = yf.Ticker(ticker)
+            price = stock.history(period="1d")["Close"].iloc[-1]
+
+            data.append({
+                "ticker": ticker,
+                "price": price
+            })
+
+        except Exception:
+            continue
+
     return pd.DataFrame(data)
