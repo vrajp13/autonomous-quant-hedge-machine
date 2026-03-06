@@ -1,21 +1,27 @@
 import yfinance as yf
 import pandas as pd
 
+
 def fetch_prices(tickers):
 
-    data = []
+    rows = []
 
     for ticker in tickers:
         try:
             stock = yf.Ticker(ticker)
-            price = stock.history(period="1d")["Close"].iloc[-1]
+            hist = stock.history(period="1d")
 
-            data.append({
+            if hist.empty:
+                continue
+
+            price = hist["Close"].iloc[-1]
+
+            rows.append({
                 "ticker": ticker,
-                "price": price
+                "price": float(price)
             })
 
         except Exception:
             continue
 
-    return pd.DataFrame(data)
+    return pd.DataFrame(rows)
