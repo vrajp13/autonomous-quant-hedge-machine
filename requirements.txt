@@ -1,5 +1,9 @@
 
+# core dependencies
 pandas
 numpy
 yfinance
 requests
+
+# testing / development
+pytest
