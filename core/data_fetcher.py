@@ -1,27 +1,30 @@
 import yfinance as yf
 import pandas as pd
+import time
 
 
 def fetch_prices(tickers):
-
     rows = []
 
     for ticker in tickers:
         try:
             stock = yf.Ticker(ticker)
-            hist = stock.history(period="1d")
+            price = stock.info.get("regularMarketPrice")
 
-            if hist.empty:
-                continue
+            if price is not None:
+                rows.append({
+                    "ticker": ticker,
+                    "price": price
+                })
 
-            price = hist["Close"].iloc[-1]
+        except Exception as e:
+            print(f"Error fetching {ticker}: {e}")
 
-            rows.append({
-                "ticker": ticker,
-                "price": float(price)
-            })
+        time.sleep(0.1)  # prevent Yahoo throttling
 
-        except Exception:
-            continue
+    if len(rows) == 0:
+        print("WARNING: No price data returned")
+        return pd.DataFrame(columns=["ticker", "price"])
 
-    return pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+    return df
