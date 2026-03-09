@@ -1,35 +1,88 @@
 name: Quant Hedge Engine
 
 on:
+  # ── Scheduled runs ──────────────────────────────────────────────────────
   schedule:
-    - cron: "0 */3 * * 1-5"
+    # Every 3 hours on weekdays (Mon–Fri), 09:00–21:00 UTC
+    # This covers pre-market, open, midday, close, and after-hours
+    - cron: "0 9,12,15,18,21 * * 1-5"
+
+    # Weekly deep-analysis report: every Friday at 20:30 UTC
+    # (≈ 30 min after US market close, giving time for data to settle)
+    - cron: "30 20 * * 5"
+
+  # ── Manual trigger with mode selection ─────────────────────────────────
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Report mode"
+        required: false
+        default: "daily"
+        type: choice
+        options:
+          - daily
+          - weekly
+          - test
 
 jobs:
   run-engine:
     runs-on: ubuntu-latest
+    timeout-minutes: 30      # guard against hanging yfinance calls
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      # ── 1. Checkout ─────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      # ── 2. Python setup ─────────────────────────────────────────────────
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
+          cache: "pip"
 
+      # ── 3. Dependencies ──────────────────────────────────────────────────
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
-      - name: Run tests
-        # running the unit tests prevents regressions like the pandas scalar bug
-        run: |
-          pytest -q
+      # ── 4. Tests ─────────────────────────────────────────────────────────
+      - name: Run unit tests
+        run: pytest tests/ -q --tb=short
 
-      - name: Run quant engine
+      # ── 5. Determine run mode ────────────────────────────────────────────
+      # If triggered by the weekly cron or manual 'weekly' mode → weekly report
+      # Otherwise → daily scan
+      - name: Set run mode
+        id: set_mode
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
+          else
+            # Check if this is the Friday 20:30 cron
+            HOUR=$(date -u +%H)
+            WEEKDAY=$(date -u +%u)   # 1=Mon, 5=Fri
+            if [[ "$WEEKDAY" == "5" && "$HOUR" == "20" ]]; then
+              echo "mode=weekly" >> $GITHUB_OUTPUT
+            else
+              echo "mode=daily" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      # ── 6. Run engine ────────────────────────────────────────────────────
+      - name: Run Quant Engine
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python main.py
+          MODE="${{ steps.set_mode.outputs.mode }}"
+          echo "Running in mode: $MODE"
+          python main.py --$MODE
+
+      # ── 7. Upload logs on failure ─────────────────────────────────────
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-logs-${{ github.run_id }}
+          path: "*.log"
+          retention-days: 7

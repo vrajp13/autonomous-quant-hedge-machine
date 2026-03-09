@@ -1,11 +1,144 @@
-ticker
-AAPL
-MSFT
-NVDA
-JPM
-KO
-PG
-PEP
-XOM
-CVX
-ABBV
+ticker,sector,instrument_type,description
+AAPL,Technology,Stock,Apple Inc
+MSFT,Technology,Stock,Microsoft Corp
+NVDA,Technology,Stock,NVIDIA Corp
+GOOGL,Technology,Stock,Alphabet Inc
+META,Technology,Stock,Meta Platforms
+AMD,Technology,Stock,Advanced Micro Devices
+AVGO,Technology,Stock,Broadcom Inc
+ORCL,Technology,Stock,Oracle Corp
+CRM,Technology,Stock,Salesforce Inc
+ADBE,Technology,Stock,Adobe Inc
+INTC,Technology,Stock,Intel Corp
+QCOM,Technology,Stock,Qualcomm Inc
+TXN,Technology,Stock,Texas Instruments
+NOW,Technology,Stock,ServiceNow Inc
+PANW,Technology,Stock,Palo Alto Networks
+SNOW,Technology,Stock,Snowflake Inc
+PLTR,Technology,Stock,Palantir Technologies
+JPM,Financials,Stock,JPMorgan Chase
+BAC,Financials,Stock,Bank of America
+GS,Financials,Stock,Goldman Sachs
+MS,Financials,Stock,Morgan Stanley
+WFC,Financials,Stock,Wells Fargo
+BRK-B,Financials,Stock,Berkshire Hathaway
+BLK,Financials,Stock,BlackRock Inc
+AXP,Financials,Stock,American Express
+V,Financials,Stock,Visa Inc
+MA,Financials,Stock,Mastercard Inc
+C,Financials,Stock,Citigroup Inc
+SCHW,Financials,Stock,Charles Schwab
+COF,Financials,Stock,Capital One
+CB,Financials,Stock,Chubb Ltd
+UNH,Healthcare,Stock,UnitedHealth Group
+JNJ,Healthcare,Stock,Johnson & Johnson
+LLY,Healthcare,Stock,Eli Lilly
+PFE,Healthcare,Stock,Pfizer Inc
+ABBV,Healthcare,Stock,AbbVie Inc
+MRK,Healthcare,Stock,Merck & Co
+TMO,Healthcare,Stock,Thermo Fisher Scientific
+ABT,Healthcare,Stock,Abbott Laboratories
+BMY,Healthcare,Stock,Bristol-Myers Squibb
+AMGN,Healthcare,Stock,Amgen Inc
+GILD,Healthcare,Stock,Gilead Sciences
+ISRG,Healthcare,Stock,Intuitive Surgical
+SYK,Healthcare,Stock,Stryker Corp
+REGN,Healthcare,Stock,Regeneron Pharmaceuticals
+XOM,Energy,Stock,Exxon Mobil
+CVX,Energy,Stock,Chevron Corp
+COP,Energy,Stock,ConocoPhillips
+SLB,Energy,Stock,SLB (Schlumberger)
+EOG,Energy,Stock,EOG Resources
+OXY,Energy,Stock,Occidental Petroleum
+MPC,Energy,Stock,Marathon Petroleum
+PSX,Energy,Stock,Phillips 66
+VLO,Energy,Stock,Valero Energy
+KMI,Energy,Stock,Kinder Morgan
+WMB,Energy,Stock,Williams Companies
+AMZN,Consumer Discretionary,Stock,Amazon.com Inc
+TSLA,Consumer Discretionary,Stock,Tesla Inc
+HD,Consumer Discretionary,Stock,Home Depot
+MCD,Consumer Discretionary,Stock,McDonald's Corp
+NKE,Consumer Discretionary,Stock,Nike Inc
+SBUX,Consumer Discretionary,Stock,Starbucks Corp
+TGT,Consumer Discretionary,Stock,Target Corp
+LOW,Consumer Discretionary,Stock,Lowe's Companies
+BKNG,Consumer Discretionary,Stock,Booking Holdings
+MAR,Consumer Discretionary,Stock,Marriott International
+F,Consumer Discretionary,Stock,Ford Motor
+GM,Consumer Discretionary,Stock,General Motors
+PG,Consumer Staples,Stock,Procter & Gamble
+KO,Consumer Staples,Stock,Coca-Cola Co
+PEP,Consumer Staples,Stock,PepsiCo Inc
+PM,Consumer Staples,Stock,Philip Morris
+MO,Consumer Staples,Stock,Altria Group
+COST,Consumer Staples,Stock,Costco Wholesale
+WMT,Consumer Staples,Stock,Walmart Inc
+CL,Consumer Staples,Stock,Colgate-Palmolive
+GIS,Consumer Staples,Stock,General Mills
+KHC,Consumer Staples,Stock,Kraft Heinz
+SJM,Consumer Staples,Stock,JM Smucker
+CAT,Industrials,Stock,Caterpillar Inc
+HON,Industrials,Stock,Honeywell International
+UPS,Industrials,Stock,United Parcel Service
+BA,Industrials,Stock,Boeing Co
+RTX,Industrials,Stock,RTX Corp (Raytheon)
+LMT,Industrials,Stock,Lockheed Martin
+GE,Industrials,Stock,GE Aerospace
+DE,Industrials,Stock,Deere & Company
+MMM,Industrials,Stock,3M Company
+FDX,Industrials,Stock,FedEx Corp
+NOC,Industrials,Stock,Northrop Grumman
+GD,Industrials,Stock,General Dynamics
+UBER,Industrials,Stock,Uber Technologies
+NEE,Utilities,Stock,NextEra Energy
+DUK,Utilities,Stock,Duke Energy
+SO,Utilities,Stock,Southern Company
+D,Utilities,Stock,Dominion Energy
+AEP,Utilities,Stock,American Electric Power
+PCG,Utilities,Stock,PG&E Corp
+EXC,Utilities,Stock,Exelon Corp
+AMT,Real Estate,Stock,American Tower Corp
+PLD,Real Estate,Stock,Prologis Inc
+CCI,Real Estate,Stock,Crown Castle Inc
+EQIX,Real Estate,Stock,Equinix Inc
+SPG,Real Estate,Stock,Simon Property Group
+O,Real Estate,Stock,Realty Income Corp
+LIN,Materials,Stock,Linde plc
+APD,Materials,Stock,Air Products
+ECL,Materials,Stock,Ecolab Inc
+FCX,Materials,Stock,Freeport-McMoRan
+NEM,Materials,Stock,Newmont Corp
+ALB,Materials,Stock,Albemarle Corp
+T,Communication Services,Stock,AT&T Inc
+VZ,Communication Services,Stock,Verizon Communications
+NFLX,Communication Services,Stock,Netflix Inc
+DIS,Communication Services,Stock,Walt Disney Co
+CMCSA,Communication Services,Stock,Comcast Corp
+TMUS,Communication Services,Stock,T-Mobile US
+EA,Communication Services,Stock,Electronic Arts
+SPY,ETF,ETF,S&P 500 ETF
+QQQ,ETF,ETF,Nasdaq 100 ETF
+IWM,ETF,ETF,Russell 2000 ETF
+DIA,ETF,ETF,Dow Jones ETF
+XLK,ETF,ETF,Technology Sector ETF
+XLF,ETF,ETF,Financials Sector ETF
+XLV,ETF,ETF,Healthcare Sector ETF
+XLE,ETF,ETF,Energy Sector ETF
+XLY,ETF,ETF,Consumer Discretionary ETF
+XLP,ETF,ETF,Consumer Staples ETF
+XLI,ETF,ETF,Industrials Sector ETF
+XLU,ETF,ETF,Utilities Sector ETF
+XLRE,ETF,ETF,Real Estate Sector ETF
+XLB,ETF,ETF,Materials Sector ETF
+XLC,ETF,ETF,Communication Services ETF
+GLD,Commodities,ETF,Gold ETF
+SLV,Commodities,ETF,Silver ETF
+USO,Commodities,ETF,Oil ETF
+UNG,Commodities,ETF,Natural Gas ETF
+PDBC,Commodities,ETF,Commodities ETF
+TLT,Bonds,ETF,20+ Year Treasury Bond ETF
+IEF,Bonds,ETF,7-10 Year Treasury Bond ETF
+HYG,Bonds,ETF,High Yield Bond ETF
+LQD,Bonds,ETF,Investment Grade Bond ETF
+^VIX,Volatility,Index,CBOE Volatility Index

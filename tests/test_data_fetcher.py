@@ -1,15 +1,13 @@
-import os
-import sys
-
-# ensure the repository root is on the import path so that the
-# `core` package can be imported when pytest runs from the tests/ directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+"""
+tests/test_data_fetcher.py – Unit tests for core.data_fetcher.
+"""
 
 import pandas as pd
 import pytest
-
 from core import data_fetcher
 
+
+# ── Fakes ──────────────────────────────────────────────────────────────────
 
 class DummyTicker:
     def __init__(self, ticker):
@@ -17,57 +15,124 @@ class DummyTicker:
 
     @property
     def info(self):
-        # always return a constant price so that we can assert on it
-        return {"regularMarketPrice": 123.45}
+        return {"regularMarketPrice": 123.45, "marketCap": 3e12, "forwardPE": 25.0}
+
+    @property
+    def news(self):
+        return [{"title": "Record earnings beat estimates", "providerPublishTime": 9999999999}]
+
+    @property
+    def calendar(self):
+        return None
+
+    @property
+    def insider_transactions(self):
+        return pd.DataFrame()
 
 
 class DummyTickerNoPrice:
     def __init__(self, ticker):
-        self._ticker = ticker
+        pass
 
     @property
     def info(self):
-        # simulate missing data
         return {}
 
+    @property
+    def news(self):
+        return []
 
-def test_fetch_prices_empty(monkeypatch):
-    # empty list should give empty DataFrame with correct columns
-    df = data_fetcher.fetch_prices([])
-    assert isinstance(df, pd.DataFrame)
-    assert df.empty
-    assert list(df.columns) == ["ticker", "price"]
+    @property
+    def calendar(self):
+        return None
 
-
-def test_fetch_prices_single_string(monkeypatch):
-    # passing a string should be treated as a list of one ticker
-    monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTicker)
-    df = data_fetcher.fetch_prices("AAPL")
-    assert not df.empty
-    assert df.iloc[0].ticker == "AAPL"
-    assert df.iloc[0].price == 123.45
+    @property
+    def insider_transactions(self):
+        return pd.DataFrame()
 
 
-def test_fetch_prices_iterable(monkeypatch):
-    monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTicker)
-    tickers = ("GOOG", "MSFT")  # tuple to ensure casting works
-    df = data_fetcher.fetch_prices(tickers)
-    assert list(df.ticker) == ["GOOG", "MSFT"]
+# ── fetch_prices (legacy shim) ─────────────────────────────────────────────
+
+class TestFetchPricesLegacy:
+    def test_empty_list(self):
+        df = data_fetcher.fetch_prices([])
+        assert isinstance(df, pd.DataFrame)
+        assert df.empty
+        assert list(df.columns) == ["ticker", "price"]
+
+    def test_single_string(self, monkeypatch):
+        monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTicker)
+        df = data_fetcher.fetch_prices("AAPL")
+        assert not df.empty
+        assert df.iloc[0]["ticker"] == "AAPL"
+        assert df.iloc[0]["price"]  == 123.45
+
+    def test_tuple_iterable(self, monkeypatch):
+        monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTicker)
+        df = data_fetcher.fetch_prices(("GOOG", "MSFT"))
+        assert list(df["ticker"]) == ["GOOG", "MSFT"]
+
+    def test_all_missing_price(self, monkeypatch):
+        monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTickerNoPrice)
+        df = data_fetcher.fetch_prices(["X", "Y"])
+        assert df.empty
+
+    def test_non_iterable_input(self, monkeypatch):
+        monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTicker)
+        df = data_fetcher.fetch_prices(42)
+        assert not df.empty
+        assert df.iloc[0]["ticker"] == 42
+
+    def test_none_input(self):
+        df = data_fetcher.fetch_prices(None)
+        assert df.empty
 
 
-def test_fetch_prices_all_none(monkeypatch):
-    monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTickerNoPrice)
-    df = data_fetcher.fetch_prices(["X", "Y"])
-    assert df.empty, "should return empty DataFrame when no prices are available"
+# ── fetch_ticker_info ──────────────────────────────────────────────────────
+
+class TestFetchTickerInfo:
+    def test_returns_dict(self, monkeypatch):
+        monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTicker)
+        result = data_fetcher.fetch_ticker_info("AAPL")
+        assert isinstance(result, dict)
+
+    def test_known_field_present(self, monkeypatch):
+        monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTicker)
+        result = data_fetcher.fetch_ticker_info("AAPL")
+        assert result["regularMarketPrice"] == 123.45
+
+    def test_error_returns_empty_dict(self, monkeypatch):
+        monkeypatch.setattr(data_fetcher.yf, "Ticker", lambda t: (_ for _ in ()).throw(RuntimeError("err")))
+        result = data_fetcher.fetch_ticker_info("BAD")
+        assert result == {}
 
 
-def test_fetch_prices_invalid_type(monkeypatch):
-    # passing a non-iterable object should not crash
-    monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTicker)
-    df = data_fetcher.fetch_prices(42)
-    assert not df.empty
-    assert df.iloc[0].ticker == 42
+# ── fetch_news ─────────────────────────────────────────────────────────────
+
+class TestFetchNews:
+    def test_returns_list(self, monkeypatch):
+        monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTicker)
+        news = data_fetcher.fetch_news("AAPL")
+        assert isinstance(news, list)
+
+    def test_max_items_respected(self, monkeypatch):
+        monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTicker)
+        news = data_fetcher.fetch_news("AAPL", max_items=1)
+        assert len(news) <= 1
+
+    def test_error_returns_empty_list(self, monkeypatch):
+        monkeypatch.setattr(data_fetcher.yf, "Ticker", lambda t: (_ for _ in ()).throw(RuntimeError("err")))
+        assert data_fetcher.fetch_news("BAD") == []
+
+
+# ── fetch_upcoming_earnings ────────────────────────────────────────────────
+
+class TestFetchUpcomingEarnings:
+    def test_returns_dict_with_key(self, monkeypatch):
+        monkeypatch.setattr(data_fetcher.yf, "Ticker", DummyTicker)
+        result = data_fetcher.fetch_upcoming_earnings("AAPL")
+        assert "earnings_date" in result
 
 
 if __name__ == "__main__":
-    pytest.main([__file__])
+    pytest.main([__file__, "-v"])
