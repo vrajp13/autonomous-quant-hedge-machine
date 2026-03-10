@@ -240,19 +240,23 @@ def get_universe(
         df = _CACHE
     else:
         frames = []
+        live_sources_succeeded = False
 
         if include_sp500:
             sp500 = _fetch_sp500()
             if not sp500.empty:
                 frames.append(sp500)
+                live_sources_succeeded = True
 
         if include_nasdaq100:
             nq100 = _fetch_nasdaq100()
             if not nq100.empty:
                 frames.append(nq100)
+                live_sources_succeeded = True
 
-        # Always add supplement
-        frames.append(pd.DataFrame(SUPPLEMENT))
+        # Only add supplement if at least one live source succeeded
+        if live_sources_succeeded:
+            frames.append(pd.DataFrame(SUPPLEMENT))
 
         if frames:
             df = pd.concat(frames, ignore_index=True)

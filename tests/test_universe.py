@@ -35,11 +35,23 @@ NQ100_HTML = """
 
 
 def _make_sp500_df():
-    return pd.read_html(io.StringIO(SP500_HTML))[0]
+    """Build the S&P 500 DataFrame from mock HTML."""
+    return pd.DataFrame([
+        {"Symbol": "AAPL", "Security": "Apple Inc.", "GICS Sector": "Information Technology", "GICS Sub-Industry": "Tech Hardware"},
+        {"Symbol": "MSFT", "Security": "Microsoft Corp.", "GICS Sector": "Information Technology", "GICS Sub-Industry": "Systems Software"},
+        {"Symbol": "JPM", "Security": "JPMorgan Chase", "GICS Sector": "Financials", "GICS Sub-Industry": "Diversified Banks"},
+        {"Symbol": "JNJ", "Security": "Johnson & Johnson", "GICS Sector": "Health Care", "GICS Sub-Industry": "Pharmaceuticals"},
+        {"Symbol": "XOM", "Security": "Exxon Mobil", "GICS Sector": "Energy", "GICS Sub-Industry": "Integrated Oil & Gas"},
+        {"Symbol": "BRK.B", "Security": "Berkshire Hathaway", "GICS Sector": "Financials", "GICS Sub-Industry": "Multi-Sector Holdings"},
+    ])
 
 
 def _make_nq100_df():
-    return pd.read_html(io.StringIO(NQ100_HTML))[0]
+    """Build the Nasdaq-100 DataFrame from mock HTML."""
+    return pd.DataFrame([
+        {"Ticker": "NVDA", "Company": "NVIDIA", "Sector": "Information Technology"},
+        {"Ticker": "AAPL", "Company": "Apple", "Sector": "Information Technology"},
+    ])
 
 
 # ── GICS mapping ───────────────────────────────────────────────────────────
@@ -58,38 +70,38 @@ class TestGicsMapping:
 
 class TestFetchSP500:
     def test_returns_dataframe(self, monkeypatch):
-        monkeypatch.setattr(pd, "read_html", lambda *a, **k: [_make_sp500_df()])
+        monkeypatch.setattr(univ.pd, "read_html", lambda *a, **k: [_make_sp500_df()])
         df = univ._fetch_sp500()
         assert isinstance(df, pd.DataFrame)
         assert not df.empty
 
     def test_contains_required_columns(self, monkeypatch):
-        monkeypatch.setattr(pd, "read_html", lambda *a, **k: [_make_sp500_df()])
+        monkeypatch.setattr(univ.pd, "read_html", lambda *a, **k: [_make_sp500_df()])
         df = univ._fetch_sp500()
         for col in ["ticker", "sector", "instrument_type", "description"]:
             assert col in df.columns, f"Missing column: {col}"
 
     def test_gics_normalised(self, monkeypatch):
-        monkeypatch.setattr(pd, "read_html", lambda *a, **k: [_make_sp500_df()])
+        monkeypatch.setattr(univ.pd, "read_html", lambda *a, **k: [_make_sp500_df()])
         df = univ._fetch_sp500()
         # 'Information Technology' must become 'Technology'
         tech_row = df[df["ticker"] == "AAPL"]
         assert tech_row["sector"].values[0] == "Technology"
 
     def test_brk_b_dot_converted(self, monkeypatch):
-        monkeypatch.setattr(pd, "read_html", lambda *a, **k: [_make_sp500_df()])
+        monkeypatch.setattr(univ.pd, "read_html", lambda *a, **k: [_make_sp500_df()])
         df = univ._fetch_sp500()
         tickers = df["ticker"].tolist()
         assert "BRK-B" in tickers
         assert "BRK.B" not in tickers
 
     def test_all_stocks_type(self, monkeypatch):
-        monkeypatch.setattr(pd, "read_html", lambda *a, **k: [_make_sp500_df()])
+        monkeypatch.setattr(univ.pd, "read_html", lambda *a, **k: [_make_sp500_df()])
         df = univ._fetch_sp500()
         assert (df["instrument_type"] == "Stock").all()
 
     def test_network_error_returns_empty(self, monkeypatch):
-        monkeypatch.setattr(pd, "read_html", lambda *a, **k: (_ for _ in ()).throw(Exception("net err")))
+        monkeypatch.setattr(univ.pd, "read_html", lambda *a, **k: (_ for _ in ()).throw(Exception("net err")))
         df = univ._fetch_sp500()
         assert df.empty
 
@@ -98,12 +110,12 @@ class TestFetchSP500:
 
 class TestFetchNasdaq100:
     def test_returns_dataframe(self, monkeypatch):
-        monkeypatch.setattr(pd, "read_html", lambda *a, **k: [_make_nq100_df()])
+        monkeypatch.setattr(univ.pd, "read_html", lambda *a, **k: [_make_nq100_df()])
         df = univ._fetch_nasdaq100()
         assert isinstance(df, pd.DataFrame)
 
     def test_network_error_returns_empty(self, monkeypatch):
-        monkeypatch.setattr(pd, "read_html", lambda *a, **k: (_ for _ in ()).throw(Exception("net err")))
+        monkeypatch.setattr(univ.pd, "read_html", lambda *a, **k: (_ for _ in ()).throw(Exception("net err")))
         df = univ._fetch_nasdaq100()
         assert df.empty
 
